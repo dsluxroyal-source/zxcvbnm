@@ -1,0 +1,74 @@
+import os
+import smtplib
+import speech_recognition as sr
+recognizer = sr.Recognizer()
+def listen():
+    with sr.Microphone() as source:
+        print("Listening...")
+        recognizer.adjust_for_ambient_noise(source)
+        audio = recognizer.listen(source)
+    try:
+        command = recognizer.recognize_google(audio)
+        print("You:", command)
+        return command.lower()
+    except:
+        return ""
+def send_email():
+    sender = input("Sender Email: ")
+    password = input("Password/App Password: ")
+    receiver = input("Receiver Email: ")
+    subject = input("Subject: ")
+    message = input("Message: ")
+    email = f"Subject: {subject}\n\n{message}"
+    try:
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(sender, password)
+        server.sendmail(sender, receiver, email)
+        server.quit()
+        print("Email sent successfully.")
+    except Exception as e:
+        print("Error:", e)
+def list_files():
+    folder = input("Folder Path: ")
+    if not os.path.exists(folder):
+        print("Folder not found.")
+        return
+    print("\nFiles:\n")
+    for file in os.listdir(folder):
+        print("-", file)
+def search_file():
+    folder = input("Folder Path: ")
+    keyword = input("File Name: ").lower()
+    if not os.path.exists(folder):
+        print("Folder not found.")
+        return
+    found = False
+    for root, dirs, files in os.walk(folder):
+        for file in files:
+            if keyword in file.lower():
+                print(os.path.join(root, file))
+                found = True
+    if not found:
+        print("No matching file found.")
+print("===== VOICE EMAIL + FILE MANAGER =====")
+while True:
+    print("\nSay or type one of these commands:")
+    print("email")
+    print("list files")
+    print("search file")
+    print("exit")
+    command = input("Command (or use voice later): ").lower()
+    if command == "voice":
+        command = listen()
+    if command == "email":
+        send_email()
+    elif command == "list files":
+        list_files()
+    elif command == "search file":
+        search_file()
+    elif command == "exit":
+        print("Goodbye!")
+        break
+    else:
+        print("Unknown command.")
